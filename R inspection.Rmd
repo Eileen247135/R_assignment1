@@ -1,0 +1,37 @@
+---
+title: "R inspection of two files"
+output: html_document
+---
+
+Inspect the size of each file
+```{r}
+file_info_snp <- file.info("snp_position.txt")
+file_size_snp <- file_info_snp$size
+cat("file size: ", file_size_snp, "bytes")
+
+file_info_f <- file.info("fang_et_al_genotypes.txt")
+file_size_f <- file_info_snp$size
+cat("file size: ", file_size_f, "bytes")
+```
+
+Inspect the number of columns of each file
+```{r}
+csnp <- read.table("snp_position.txt", header = TRUE, sep = "\t")
+numc_m <- ncol(csnp)
+cat("number of column: ", numc_m)
+
+cfang <- read.table("fang_et_al_genotypes.txt", header = TRUE)
+numc_f <- ncol(cfang)
+cat("number of column: ", numc_f)
+```
+
+Inspect the number of rows of each file
+```{r}
+rsnp <- read.table("snp_position.txt", header = TRUE, sep = "\t")
+numr_m <- nrow(rsnp)
+cat("number of row: ", numr_m, "\n")
+
+rfang <- read.table("fang_et_al_genotypes.txt", header = TRUE)
+numr_f <- nrow(rfang)
+cat("number of row: ", numr_f)
+```

@@ -1,0 +1,97 @@
+---
+title: "R part1(2)"
+output: html_document
+---
+
+Data processing (maize): 
+* 10 files with SNPs ordered based on increasing position values and with missing data encoded by "?"
+```{r}
+install.packages(gtools)
+library(tidyverse)
+library(dplyr)
+library(gtools)
+
+fang <- read_table("fang_et_al_genotypes.txt")
+snps <- read_table("snp_position.txt")
+
+maize <- filter(fang, Group %in% c("ZMMIL", "ZMMLR", "ZMMMR"))
+maize1 <- select (maize, -c(Group, JG_OTU))
+maizet1 <- t(maize1)
+maizet1d <- as.data.frame(maizet1)
+maizet1d <- cbind(colnames(maize1), maizet1d)         #add a colname of "maize1" to the transposed maize file
+colnames(maizet1d) <- as.character(maizet1d[1,])
+maizet1d <- maizet1d[-1,]
+colnames(maizet1d)[1] <- "SNP_ID"          #rename the colnames in "maizet1d" file
+rownames(maizet1d) <- NULL
+
+#extract key information from "snp" file
+snps_chr <- select(snps, SNP_ID, Chromosome, Position)
+
+#join two dataframe file together on a common column
+maize_merge <- inner_join(snps_chr, maizet1d, by = "SNP_ID")
+
+#make txt files for merged maize information
+write.table(maize_merge, file = "merged_maize.txt", quote = FALSE, sep="\t", row.names = FALSE, col.names = TRUE)
+
+#10 files (1 for each chromosome) with SNPs ordered based on increasing position values and with missing data encoded by this symbol: ?
+maize_mergei <- maize_merge
+maize_mergei[maize_mergei == "?/?"] <- "?"       #missing data encoded by "?"
+maize_merge_posi <- mixedsort(as.character(maize_mergei$Position))   
+maize_mergei$Position <- maize_merge_posi   #increasing position values
+
+maize_chr1i <- filter(maize_mergei, Chromosome == 1)
+maize_chr2i <- filter(maize_mergei, Chromosome == 2)
+maize_chr3i <- filter(maize_mergei, Chromosome == 3)
+maize_chr4i <- filter(maize_mergei, Chromosome == 4)
+maize_chr5i <- filter(maize_mergei, Chromosome == 5)
+maize_chr6i <- filter(maize_mergei, Chromosome == 6)
+maize_chr7i <- filter(maize_mergei, Chromosome == 7)
+maize_chr8i <- filter(maize_mergei, Chromosome == 8)
+maize_chr9i <- filter(maize_mergei, Chromosome == 9)
+maize_chr10i <- filter(maize_mergei, Chromosome == 10)
+
+write.table(maize_chr1i, file = "maize_chr1_i.txt", quote = FALSE, sep="\t", row.names = FALSE, col.names = TRUE)
+write.table(maize_chr2i, file = "maize_chr2_i.txt", quote = FALSE, sep="\t", row.names = FALSE, col.names = TRUE)
+write.table(maize_chr3i, file = "maize_chr3_i.txt", quote = FALSE, sep="\t", row.names = FALSE, col.names = TRUE)
+write.table(maize_chr4i, file = "maize_chr4_i.txt", quote = FALSE, sep="\t", row.names = FALSE, col.names = TRUE)
+write.table(maize_chr5i, file = "maize_chr5_i.txt", quote = FALSE, sep="\t", row.names = FALSE, col.names = TRUE)
+write.table(maize_chr6i, file = "maize_chr6_i.txt", quote = FALSE, sep="\t", row.names = FALSE, col.names = TRUE)
+write.table(maize_chr7i, file = "maize_chr7_i.txt", quote = FALSE, sep="\t", row.names = FALSE, col.names = TRUE)
+write.table(maize_chr8i, file = "maize_chr8_i.txt", quote = FALSE, sep="\t", row.names = FALSE, col.names = TRUE)
+write.table(maize_chr9i, file = "maize_chr9_i.txt", quote = FALSE, sep="\t", row.names = FALSE, col.names = TRUE)
+write.table(maize_chr10i, file = "maize_chr10_i.txt", quote = FALSE, sep="\t", row.names = FALSE, col.names = TRUE)
+```
+
+
+Data processing (maize): 
+* 10 files with SNPs ordered based on decreasing position values and with missing data encoded by "-"
+```{r}
+#10 files (1 for each chromosome) with SNPs ordered based on decreasing position values and with missing data encoded by this symbol: -
+maize_merged <- maize_merge
+maize_merged[maize_merged == "?/?"] <- "-"       #missing data encoded by "?"
+maize_merge_posd <- mixedsort(as.character(maize_merged$Position), decreasing = TRUE)   
+maize_merged$Position <- maize_merge_posd   #decreasing position values
+
+
+maize_chr1d <- filter(maize_merged, Chromosome == 1)
+maize_chr2d <- filter(maize_merged, Chromosome == 2)
+maize_chr3d <- filter(maize_merged, Chromosome == 3)
+maize_chr4d <- filter(maize_merged, Chromosome == 4)
+maize_chr5d <- filter(maize_merged, Chromosome == 5)
+maize_chr6d <- filter(maize_merged, Chromosome == 6)
+maize_chr7d <- filter(maize_merged, Chromosome == 7)
+maize_chr8d <- filter(maize_merged, Chromosome == 8)
+maize_chr9d <- filter(maize_merged, Chromosome == 9)
+maize_chr10d <- filter(maize_merged, Chromosome == 10)
+
+write.table(maize_chr1d, file = "maize_chr1_d.txt", quote = FALSE, sep="\t", row.names = FALSE, col.names = TRUE)
+write.table(maize_chr2d, file = "maize_chr2_d.txt", quote = FALSE, sep="\t", row.names = FALSE, col.names = TRUE)
+write.table(maize_chr3d, file = "maize_chr3_d.txt", quote = FALSE, sep="\t", row.names = FALSE, col.names = TRUE)
+write.table(maize_chr4d, file = "maize_chr4_d.txt", quote = FALSE, sep="\t", row.names = FALSE, col.names = TRUE)
+write.table(maize_chr5d, file = "maize_chr5_d.txt", quote = FALSE, sep="\t", row.names = FALSE, col.names = TRUE)
+write.table(maize_chr6d, file = "maize_chr6_d.txt", quote = FALSE, sep="\t", row.names = FALSE, col.names = TRUE)
+write.table(maize_chr7d, file = "maize_chr7_d.txt", quote = FALSE, sep="\t", row.names = FALSE, col.names = TRUE)
+write.table(maize_chr8d, file = "maize_chr8_d.txt", quote = FALSE, sep="\t", row.names = FALSE, col.names = TRUE)
+write.table(maize_chr9d, file = "maize_chr9_d.txt", quote = FALSE, sep="\t", row.names = FALSE, col.names = TRUE)
+write.table(maize_chr10d, file = "maize_chr10_d.txt", quote = FALSE, sep="\t", row.names = FALSE, col.names = TRUE)
+```

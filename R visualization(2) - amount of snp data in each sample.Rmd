@@ -1,0 +1,80 @@
+---
+title: "R visualization(2) - amount of SNPs in each individual"
+output: html_document
+---
+
+This is the figure that shows the amount of SNPs and missing data in each maize sample.
+```{r}
+library(ggplot2)
+library(tidyverse)
+library(dplyr)
+
+#add four columns in "maize_merge_col" file: sum_homo, sum_heter, sum_missing, proportion
+maize_merge<- read_table("merged_maize.txt")
+fang <- read_table("fang_et_al_genotypes.txt")
+
+maize_merge_col <- select(maize_merge, -c(SNP_ID, Chromosome, Position))
+colsum_homo_m <- colSums(maize_merge_col == "A/A" | maize_merge_col == "C/C" | maize_merge_col == "G/G"
+                         | maize_merge_col == "T/T")
+colsum_heter_m <- colSums(maize_merge_col == "A/G" | maize_merge_col == "A/C" | maize_merge_col == "A/T"
+                          | maize_merge_col == "C/G" | maize_merge_col == "G/T" | maize_merge_col == "C/T")
+colsum_missing_m <- colSums(maize_merge_col == "?/?")
+col_proportion_m <- colsum_heter_m/colsum_homo_m
+maize <- filter(fang, Group %in% c("ZMMIL", "ZMMLR", "ZMMMR"))
+maize1 <- select (maize, -c(Group, JG_OTU))
+samples_m <- maize1$Sample_ID
+samples_p_m <- c(1:length(samples_m))
+
+df_colsnps_m <- data.frame(samples_m, colsum_homo_m, colsum_heter_m, col_proportion_m,
+                           colsum_missing_m, samples_p_m)
+
+df_csg_m <- ggplot(df_colsnps_m, aes(x=samples_p_m, y=col_proportion_m)) +
+  geom_bar(stat = "identity") +
+  scale_x_continuous() + 
+  labs(title = "Amount of SNPs at each maize SNP site",
+       x = "sampe label", y = "Number of SNPs")
+print(df_csg_m)
+
+df_cmg_m <- ggplot(df_colsnps_m, aes(x=samples_p_m, y=colsum_missing_m )) +
+  geom_bar(stat = "identity") +
+  scale_x_continuous() +
+  labs(title = "Amount of missing data at each maize SNP site",
+       x = "sampe label", y = "Number of SNPs")
+print(df_cmg_m)
+```
+
+This is the figure that shows the amount of SNPs and missing data in each teosinte sample.
+```{r}
+#add four columns in "teosinte_merge_col" file: sum_homo, sum_heter, sum_missing, proportion
+teosinte_merge<- read_table("merged_teosinte.txt")
+fang <- read_table("fang_et_al_genotypes.txt")
+
+teosinte_merge_col <- select(teosinte_merge, -c(SNP_ID, Chromosome, Position))
+colsum_homo_t <- colSums(teosinte_merge_col == "A/A" | teosinte_merge_col == "C/C" | teosinte_merge_col == "G/G"
+                         | teosinte_merge_col == "T/T")
+colsum_heter_t <- colSums(teosinte_merge_col == "A/G" | teosinte_merge_col == "A/C" | teosinte_merge_col == "A/T"
+                          | teosinte_merge_col == "C/G" | teosinte_merge_col == "G/T" | teosinte_merge_col == "C/T")
+colsum_missing_t <- colSums(teosinte_merge_col == "?/?")
+col_proportion_t <- colsum_heter_t/colsum_homo_t
+teosinte <- filter(fang, Group %in% c("ZMPBA", "ZMPIL", "ZMPJA"))
+teosinte1 <- select (teosinte, -c(Group, JG_OTU))
+samples_t <- teosinte1$Sample_ID
+samples_p_t <- c(1:length(samples_t))
+
+df_colsnps_t <- data.frame(samples_t, colsum_homo_t, colsum_heter_t, col_proportion_t,
+                           colsum_missing_t, samples_p_t)
+
+df_csg_t <- ggplot(df_colsnps_t, aes(x=samples_p_t, y=col_proportion_t)) +
+  geom_bar(stat = "identity") +
+  scale_x_continuous() +
+  labs(title = "Amount of SNPs at each teosinte SNP site",
+       x = "sampe label", y = "Number of SNPs")
+print(df_csg_t)
+
+df_cmg_t <- ggplot(df_colsnps_t, aes(x=samples_p_t, y=colsum_missing_t)) +
+  geom_bar(stat = "identity") +
+  scale_x_continuous() +
+  labs(title = "Amount of missing data at each teosinte SNP site",
+       x = "sampe label", y = "Number of SNPs")
+print(df_cmg_t)
+```

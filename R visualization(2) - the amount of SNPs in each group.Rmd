@@ -1,0 +1,74 @@
+---
+title: "R visualization - missing data and amount of heterozygosity in each group"
+output: html_document
+---
+
+This is the figure that shows the number of snps at each SNP position in maize group.
+```{r}
+library(tidyverse)
+library(ggplot2)
+library(dplyr)
+
+#add four columns in "maize_merge" file: sum_homo, sum_heter, sum_missing, proportion, 
+maize_merge <- read_table("merged_maize.txt")
+rowsum_homo_m <- rowSums(maize_merge == "A/A" | maize_merge == "C/C" | maize_merge == "G/G"
+                                          | maize_merge == "T/T")
+rowsum_heter_m <- rowSums(maize_merge == "A/G" | maize_merge == "A/C" | maize_merge == "A/T"
+                                           | maize_merge == "C/G" | maize_merge == "G/T" | maize_merge == "C/T")
+rowsum_missing_m <- rowSums(maize_merge == "?/?")
+row_proportion_m <- rowsum_heter_m/rowsum_homo_m
+SNP_ID <- maize_merge$SNP_ID
+chromosome <- maize_merge$Chromosome
+position <- maize_merge$Position
+snps_p_m <- c(1:length(SNP_ID))
+
+df_rowsnps_m <- data.frame(SNP_ID, chromosome, position,rowsum_homo_m, rowsum_heter_m, 
+                           rowsum_missing_m, row_proportion_m, snps_p_m)
+
+df_rsg_m <- ggplot(df_rowsnps_m, aes(x=snps_p_m, y=row_proportion_m)) +
+  geom_bar(stat = "identity") +
+  scale_x_continuous() +
+  labs(title = "Amount of SNPs at each maize SNP site",
+       x = "SNP label", y = "Number of SNPs")
+print(df_rsg_m)
+
+df_rmg_m <- ggplot(df_rowsnps_m, aes(x=snps_p_m, y=rowsum_missing_m)) +
+  geom_bar(stat = "identity") +
+  scale_x_continuous() +
+  labs(title = "Amount of missing data at each maize SNP site",
+       x = "SNP label", y = "Number of SNPs")
+print(df_rmg_m)
+```
+
+This is the figure that shows the number of snps at each SNP position in teosinte group.
+```{r}
+#add four columns in "teosinte_merge" file: sum_homo, sum_heter, sum_missing, proportion
+teosinte_merge <- read_table("merged_teosinte.txt")
+rowsum_homo_t <- rowSums(teosinte_merge == "A/A" | teosinte_merge == "C/C" | teosinte_merge == "G/G"
+                         | teosinte_merge == "T/T")
+rowsum_heter_t <- rowSums(teosinte_merge == "A/G" | teosinte_merge == "A/C" | teosinte_merge == "A/T"
+                          | teosinte_merge == "C/G" | teosinte_merge == "G/T" | teosinte_merge == "C/T")
+rowsum_missing_t <- rowSums(teosinte_merge == "?/?")
+row_proportion_t <- rowsum_heter_t/rowsum_homo_t
+SNP_ID_t <- teosinte_merge$SNP_ID
+chromosome <- teosinte_merge$Chromosome
+position <- teosinte_merge$Position
+snps_p_t <- c(1:length(SNP_ID_t))
+
+df_rowsnps_t <- data.frame(SNP_ID_t, chromosome, position,rowsum_homo_t, rowsum_heter_t, 
+                           rowsum_missing_t, row_proportion_t, snps_p_t)
+
+df_rsg_t <- ggplot(df_rowsnps_t, aes(x=snps_p_t, y=row_proportion_t)) +
+  geom_bar(stat = "identity") +
+  scale_x_continuous() +
+  labs(title = "Amount of SNPs at each teosinte SNP site",
+       x = "SNP label", y = "Number of SNPs")
+print(df_rsg_t)
+
+df_rmg_t <- ggplot(df_rowsnps_t, aes(x=snps_p_t, y=rowsum_missing_t)) +
+  geom_bar(stat = "identity") +
+  scale_x_continuous() +
+  labs(title = "Amount of missing data at each teosinte SNP site",
+       x = "SNP label", y = "Number of SNPs")
+print(df_rmg_t)
+```

@@ -1,0 +1,94 @@
+---
+title: "R visualization - your own visualization"
+output: html_document
+---
+
+The figure shows the number of SNPs in maize group
+```{r}
+library(ggplot2)
+library(tidyverse)
+library(dplyr)
+
+#count the number of each SNP in "maize" file
+maize_merge <- read_table("merged_maize.txt")
+row_counts_m <- rowSums(maize_merge == "A/G" | maize_merge == "A/C" | maize_merge == "A/T"
+                      | maize_merge == "C/G" | maize_merge == "G/T" | maize_merge == "C/T"
+                      | maize_merge == "A/A" | maize_merge == "C/C" | maize_merge == "G/G"
+                      | maize_merge == "T/T")       #count the number of SNPs for each SNP_ID
+maize_merge_g1 <- mutate(maize_merge, density = row_counts_m)   #add a column of SNP number
+write.table(maize_merge_g1, file = "merged_maize_g1.txt", quote = FALSE, sep="\t", row.names = FALSE, col.names = TRUE)
+
+#maize - snp density
+maize_g1 <- read_table("merged_maize_g1.txt")
+nm1 <- filter(maize_g1, Chromosome == "1") 
+nm1 <- sum(nm1$density)
+nm2 <- filter(maize_g1, Chromosome == "2") 
+nm2 <- sum(nm2$density)
+nm3 <- filter(maize_g1, Chromosome == "3") 
+nm3 <- sum(nm3$density)
+nm4 <- filter(maize_g1, Chromosome == "4") 
+nm4 <- sum(nm4$density)
+nm5 <- filter(maize_g1, Chromosome == "5") 
+nm5 <- sum(nm5$density)
+nm6 <- filter(maize_g1, Chromosome == "6") 
+nm6 <- sum(nm6$density)
+nm7 <- filter(maize_g1, Chromosome == "7") 
+nm7 <- sum(nm7$density)
+nm8 <- filter(maize_g1, Chromosome == "8") 
+nm8 <- sum(nm8$density)
+nm9 <- filter(maize_g1, Chromosome == "9") 
+nm9 <- sum(nm9$density)
+nm10 <- filter(maize_g1, Chromosome == "10") 
+nm10 <- sum(nm10$density)
+maize_g1_den <- data.frame(chromosome =c("1","2","3","4","5","6","7","8","9","10"), 
+                           number=c(nm1, nm2,nm3,nm4, nm5,nm6, nm7, nm8,nm9, nm10))
+maize_g_den <- ggplot(maize_g1_den, aes(chromosome, number)) + 
+  geom_bar(stat = "identity") + scale_x_discrete() +
+  labs(title = "Density of maize SNPs Across Chromosome",
+       x = "Chromosome", y = "Number of SNPs")
+print(maize_g_den)
+```
+
+The figure shows the number of SNPs in teosinte group
+```{r}
+#count the number of each SNP in "teosinte" file
+teosinte_merge <- read_table("merged_teosinte.txt")
+row_counts_t <- rowSums(teosinte_merge == "A/G" | teosinte_merge == "A/C" | teosinte_merge == "A/T"
+                        | teosinte_merge == "C/G" | teosinte_merge == "G/T" | teosinte_merge == "C/T"
+                        | teosinte_merge == "A/A" | teosinte_merge == "C/C" | teosinte_merge == "G/G"
+                        | teosinte_merge == "T/T")       #count the number of SNPs for each SNP_ID
+teosinte_merge_g1 <- mutate(teosinte_merge, density = row_counts_t)   #add a column of SNP number
+write.table(teosinte_merge_g1, file = "merged_teosinte_g1.txt", quote = FALSE, sep="\t", row.names = FALSE, col.names = TRUE)
+
+#teosinte - snp density
+teosinte_g1 <- read_table("merged_teosinte_g1.txt")
+nt1 <- filter(teosinte_g1, Chromosome == "1") 
+nt1 <- sum(nt1$density)
+nt2 <- filter(teosinte_g1, Chromosome == "2") 
+nt2 <- sum(nt2$density)
+nt3 <- filter(teosinte_g1, Chromosome == "3") 
+nt3 <- sum(nt3$density)
+nt4 <- filter(teosinte_g1, Chromosome == "4") 
+nt4 <- sum(nt4$density)
+nt5 <- filter(teosinte_g1, Chromosome == "5") 
+nt5 <- sum(nt5$density)
+nt6 <- filter(teosinte_g1, Chromosome == "6") 
+nt6 <- sum(nt6$density)
+nt7 <- filter(teosinte_g1, Chromosome == "7") 
+nt7 <- sum(nt7$density)
+nt8 <- filter(teosinte_g1, Chromosome == "8") 
+nt8 <- sum(nt8$density)
+nt9 <- filter(teosinte_g1, Chromosome == "9") 
+nt9 <- sum(nt9$density)
+nt10 <- filter(teosinte_g1, Chromosome == "10") 
+nt10 <- sum(nt10$density)
+teosinte_g1_den <- data.frame(chromosome =c("1","2","3","4","5","6","7","8","9","10"), 
+                              number=c(nt1, nt2,nt3,nt4, nt5,nt6, nt7, nt8,nt9, nt10))
+
+#ggplot_bar for "teosinte_g1_den" and "teosinte_g1_den"
+teosinte_g_den <- ggplot(teosinte_g1_den, aes(chromosome, number)) + 
+  geom_bar(stat = "identity") + scale_x_discrete() +
+  labs(title = "Density of teosinte SNPs Across Chromosome",
+       x = "Chromosome", y = "Number of SNPs")
+print(teosinte_g_den)
+```

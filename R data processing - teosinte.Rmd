@@ -1,0 +1,95 @@
+---
+title: "R data process - teosinte"
+output: html_document
+---
+R data processing - teosinte
+* 10 files with SNPs ordered based on increasing position values and with missing data encoded by "?"
+```{r}
+install.packages(gtools)
+library(tidyverse)
+library(dplyr)
+library(gtools)
+
+#extract files into R
+fang <- read_table("fang_et_al_genotypes.txt")
+snps <- read_table("snp_position.txt")
+
+#extract key imformation from "fang" file
+teosinte <- filter(fang, Group %in% c("ZMPBA", "ZMPIL", "ZMPJA"))
+teosinte1 <- select (teosinte, -c(Group, JG_OTU))
+teosintet1 <- t(teosinte1)
+teosintet1d <- as.data.frame(teosintet1)
+teosintet1d <- cbind(colnames(teosinte1), teosintet1d)         #add a colname of "teosinte1" to the transposed teosinte file
+colnames(teosintet1d) <- as.character(teosintet1d[1,])
+teosintet1d <- teosintet1d[-1,]
+colnames(teosintet1d)[1] <- "SNP_ID"          #rename the colnames in "teosintet1d" file
+rownames(teosintet1d) <- NULL       #This is the "transposed teosinte" file for the next merging step
+
+#extract key information from "snp" file
+snps_chr <- select(snps, SNP_ID, Chromosome, Position)
+
+#join two dataframe file together on a common column
+teosinte_merge <- inner_join(snps_chr, teosintet1d, by = "SNP_ID")
+
+#make txt files for merged teosinte information
+write.table(teosinte_merge, file = "merged_teosinte.txt", quote = FALSE, sep="\t", row.names = FALSE, col.names = TRUE)
+
+#10 files (1 for each chromosome) with SNPs ordered based on increasing position values and with missing data encoded by this symbol: ?
+teosinte_mergei <- teosinte_merge
+teosinte_mergei[teosinte_mergei == "?/?"] <- "?"       #missing data encoded by "?"
+teosinte_merge_posi <- mixedsort(as.character(teosinte_mergei$Position))   
+teosinte_mergei$Position <- teosinte_merge_posi   #increasing position values
+
+teosinte_chr1i <- filter(teosinte_mergei, Chromosome == 1)
+teosinte_chr2i <- filter(teosinte_mergei, Chromosome == 2)
+teosinte_chr3i <- filter(teosinte_mergei, Chromosome == 3)
+teosinte_chr4i <- filter(teosinte_mergei, Chromosome == 4)
+teosinte_chr5i <- filter(teosinte_mergei, Chromosome == 5)
+teosinte_chr6i <- filter(teosinte_mergei, Chromosome == 6)
+teosinte_chr7i <- filter(teosinte_mergei, Chromosome == 7)
+teosinte_chr8i <- filter(teosinte_mergei, Chromosome == 8)
+teosinte_chr9i <- filter(teosinte_mergei, Chromosome == 9)
+teosinte_chr10i <- filter(teosinte_mergei, Chromosome == 10)
+
+write.table(teosinte_chr1i, file = "teosinte_chr1_i.txt", quote = FALSE, sep="\t", row.names = FALSE, col.names = TRUE)
+write.table(teosinte_chr2i, file = "teosinte_chr2_i.txt", quote = FALSE, sep="\t", row.names = FALSE, col.names = TRUE)
+write.table(teosinte_chr3i, file = "teosinte_chr3_i.txt", quote = FALSE, sep="\t", row.names = FALSE, col.names = TRUE)
+write.table(teosinte_chr4i, file = "teosinte_chr4_i.txt", quote = FALSE, sep="\t", row.names = FALSE, col.names = TRUE)
+write.table(teosinte_chr5i, file = "teosinte_chr5_i.txt", quote = FALSE, sep="\t", row.names = FALSE, col.names = TRUE)
+write.table(teosinte_chr6i, file = "teosinte_chr6_i.txt", quote = FALSE, sep="\t", row.names = FALSE, col.names = TRUE)
+write.table(teosinte_chr7i, file = "teosinte_chr7_i.txt", quote = FALSE, sep="\t", row.names = FALSE, col.names = TRUE)
+write.table(teosinte_chr8i, file = "teosinte_chr8_i.txt", quote = FALSE, sep="\t", row.names = FALSE, col.names = TRUE)
+write.table(teosinte_chr9i, file = "teosinte_chr9_i.txt", quote = FALSE, sep="\t", row.names = FALSE, col.names = TRUE)
+write.table(teosinte_chr10i, file = "teosinte_chr10_i.txt", quote = FALSE, sep="\t", row.names = FALSE, col.names = TRUE)
+```
+
+* 10 files with SNPs ordered based on decreasing position values and with missing data encoded by "-"
+```{r}
+teosinte_merged <- teosinte_merge
+teosinte_merged[teosinte_merged == "?/?"] <- "-"       #missing data encoded by "?"
+teosinte_merge_posd <- mixedsort(as.character(teosinte_merged$Position), decreasing = TRUE)   
+teosinte_merged$Position <- teosinte_merge_posd   #decreasing position values
+
+
+teosinte_chr1d <- filter(teosinte_merged, Chromosome == 1)
+teosinte_chr2d <- filter(teosinte_merged, Chromosome == 2)
+teosinte_chr3d <- filter(teosinte_merged, Chromosome == 3)
+teosinte_chr4d <- filter(teosinte_merged, Chromosome == 4)
+teosinte_chr5d <- filter(teosinte_merged, Chromosome == 5)
+teosinte_chr6d <- filter(teosinte_merged, Chromosome == 6)
+teosinte_chr7d <- filter(teosinte_merged, Chromosome == 7)
+teosinte_chr8d <- filter(teosinte_merged, Chromosome == 8)
+teosinte_chr9d <- filter(teosinte_merged, Chromosome == 9)
+teosinte_chr10d <- filter(teosinte_merged, Chromosome == 10)
+
+write.table(teosinte_chr1d, file = "teosinte_chr1_d.txt", quote = FALSE, sep="\t", row.names = FALSE, col.names = TRUE)
+write.table(teosinte_chr2d, file = "teosinte_chr2_d.txt", quote = FALSE, sep="\t", row.names = FALSE, col.names = TRUE)
+write.table(teosinte_chr3d, file = "teosinte_chr3_d.txt", quote = FALSE, sep="\t", row.names = FALSE, col.names = TRUE)
+write.table(teosinte_chr4d, file = "teosinte_chr4_d.txt", quote = FALSE, sep="\t", row.names = FALSE, col.names = TRUE)
+write.table(teosinte_chr5d, file = "teosinte_chr5_d.txt", quote = FALSE, sep="\t", row.names = FALSE, col.names = TRUE)
+write.table(teosinte_chr6d, file = "teosinte_chr6_d.txt", quote = FALSE, sep="\t", row.names = FALSE, col.names = TRUE)
+write.table(teosinte_chr7d, file = "teosinte_chr7_d.txt", quote = FALSE, sep="\t", row.names = FALSE, col.names = TRUE)
+write.table(teosinte_chr8d, file = "teosinte_chr8_d.txt", quote = FALSE, sep="\t", row.names = FALSE, col.names = TRUE)
+write.table(teosinte_chr9d, file = "teosinte_chr9_d.txt", quote = FALSE, sep="\t", row.names = FALSE, col.names = TRUE)
+write.table(teosinte_chr10d, file = "teosinte_chr10_d.txt", quote = FALSE, sep="\t", row.names = FALSE, col.names = TRUE)
+```

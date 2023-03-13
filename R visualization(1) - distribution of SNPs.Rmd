@@ -1,0 +1,55 @@
+---
+title: "R visualization - SNPs per chromosome"
+output: html_document
+---
+
+This is the figure shows the number of SNP positions on 10 chromosomes
+```{r}
+library(tidyverse)
+library(dplyr)
+library(ggplot2)
+
+snps <- read_table("snp_position.txt")  # create a figure for the "Distribution of SNPs across chromosomes"
+table(snps$Chromosome)
+num_chr <- snps %>% count(Chromosome)
+df_snps <- ggplot(num_chr) + geom_bar(aes(x=Chromosome, y=n), stat = "identity") +
+  scale_x_discrete() + labs(title = "Distribution of SNPs across chromosomes",
+                            x = "Chromosome", y = "Number of SNP positions")
+print(df_snps)
+```
+
+This is the figure that show the number of maize SNPs on each chromosome
+```{r}
+maize_merge <- read_table("merged_maize.txt")
+row_counts_m2 <- rowSums(maize_merge == "A/G" | maize_merge == "A/C" | maize_merge == "A/T"
+                        | maize_merge == "C/G" | maize_merge == "G/T" | maize_merge == "C/T"
+                        | maize_merge == "A/A" | maize_merge == "C/C" | maize_merge == "G/G"
+                        | maize_merge == "T/T")    #count the number of SNPs for each SNP_ID
+maize_merge_g2 <- mutate(maize_merge, density = row_counts_m2)     #add a column of SNP number
+write.table(maize_merge_g2, file = "merged_maize_g2.txt", quote = FALSE, sep="\t", 
+            row.names = FALSE, col.names = TRUE)
+maize_merge_g2$Position <- as.integer(maize_merge_g2$Position)
+df_chr_m <- ggplot(maize_merge_g2, aes(x=Position, y=density)) + geom_point() +
+  facet_wrap(~Chromosome) + scale_x_continuous(limits = c(100000,300000000)) +
+  labs(title = "Distribution of maize SNPs on each Chromosome",
+       x = "Chromosome", y = "Number of SNPs")
+print(df_chr_m)
+```
+
+This is the figure that show the number of teosinte SNPs on each chromosome
+```{r}
+teosinte_merge <- read_table("merged_teosinte.txt")
+row_counts_t2 <- rowSums(teosinte_merge == "A/G" | teosinte_merge == "A/C" | teosinte_merge == "A/T"
+                         | teosinte_merge == "C/G" | teosinte_merge == "G/T" | teosinte_merge == "C/T"
+                         | teosinte_merge == "A/A" | teosinte_merge == "C/C" | teosinte_merge == "G/G"
+                         | teosinte_merge == "T/T")    #count the number of SNPs for each SNP_ID
+teosinte_merge_g2 <- mutate(teosinte_merge, density = row_counts_t2)     #add a column of SNP number
+write.table(teosinte_merge_g2, file = "merged_teosinte_g2.txt", quote = FALSE, sep="\t", 
+            row.names = FALSE, col.names = TRUE)
+teosinte_merge_g2$Position <- as.integer(teosinte_merge_g2$Position)
+df_chr_t <- ggplot(teosinte_merge_g2, aes(x=Position, y=density)) + geom_point() +
+  facet_wrap(~Chromosome) + scale_x_continuous(limits = c(100000,300000000)) +
+  labs(title = "Distribution of teosinte SNPs on each Chromosome",
+       x = "Chromosome", y = "Number of SNPs")
+print(df_chr_t)
+```
