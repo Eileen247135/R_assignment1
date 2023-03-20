@@ -1,0 +1,81 @@
+---
+title: "Perea-Lopez_Review"
+author: Jeniffer Perea-Lopez
+output: html_document
+date: "2023-03-20"
+---
+
+#Data Processing
+```{r}
+#For loading files, though your repository contains the fang_et_al_genotypes.txt and snp_position.txt files, I believe we were advised to pull straight from Github and not from a local drive
+
+fang <- read_tsv("https://github.com/EEOB-BioData/BCB546_Spring2023/raw/main/assignments/UNIX_Assignment/fang_et_al_genotypes.txt")
+snps <- read_tsv("https://github.com/EEOB-BioData/BCB546_Spring2023/raw/main/assignments/UNIX_Assignment/snp_position.txt")
+
+#To cut down on lines of code and make the data more concise, I would suggest implementing "%>%"; For example: 
+
+#Instead of:
+maize <- filter(fang, Group %in% c("ZMMIL", "ZMMLR", "ZMMMR")) 
+maize1 <- select (maize, -c(Group, JG_OTU))
+##Use: 
+maize <- filter(fang, Group %in% c("ZMMIL", "ZMMLR", "ZMMMR")) %>% select (-c(Group, JG_OTU))
+
+#Your code for both maize and teosinte work; this suggestion is more to cut down on the amount of dataframes generated
+
+#I know that the assignment suggested we don't use loops because they usually take alot of time; but, if you did want to use one to create your files, then I would suggest the following, so you don't have to write a line of code for each chromosome (I didn't have an issue and I don't think it took that long):
+
+dir.create("maize")
+for (i in 1:10){
+  #filter Chromosome "i" data in maize_snp based on the "Chromosome" column
+  maize_chr <- filter(maize_merge,Chromosome %in% c(i))
+  #Sort generated files based on the "Position" column in increasing order
+  maize_chr_increasing <- maize_chr[order(maize_chr$Position),]
+  #Create corresponding files based on increasing position and Chromosome "i"
+  maize_increasing <- paste("maize/maize_increasing_chr",i,".txt", sep="")
+  #Export data frame to files corresponding to each Chromosome "i" and based on increasing position values
+  write.table(maize_chr_increasing,file= maize_increasing, row.names = FALSE, sep = "\t", col.names = TRUE)
+  
+  #Sort maize_chr files based on the "Position" column in decreasing order
+  maize_chr_decreasing <- maize_chr[order(maize_chr$Position, decreasing = TRUE),]
+  #Replace "?" with "-"
+  maize_chr_decreasing[maize_chr_decreasing=="?/?"] <- "-/-"
+  #Create corresponding files based on decreasing position and Chromosome "i"
+  maize_decreasing <- paste("maize/maize_decreasing_chr",i,".txt", sep="")
+  #Export data frame to files corresponding to each Chromosome "i" and based on decreasing position values
+  write.table(maize_chr_decreasing,file= maize_decreasing, row.names = FALSE, sep = "\t", col.names = TRUE)
+}
+
+#With one for loop, you create both sets of 10 files
+```
+
+#Data Inspection
+```{r}
+#My only comment would be to maybe add the name of the file to you cat command; For examples:
+
+#Instead of:
+file_info_snp <- file.info("snp_position.txt")
+file_size_snp <- file_info_snp$size
+cat("file size: ", file_size_snp, "bytes")
+#Use:
+file_info_snp <- file.info("snp_position.txt")
+file_size_snp <- file_info_snp$size
+cat("file size for snp_position: ", file_size_snp, "bytes")
+
+#That way when it comes back when you run the command, one can distinguish which file it is for (though your "Values" also does this so it may not be necessary)
+```
+
+#Visualization
+```{r}
+#From R visualization(1): I am not sure what the x-axis is supposed to represent; it says chromosome, but each box is already labeled with the number chromosome and the x-axis seems to be more representative of position
+
+df_chr_m <- ggplot(maize_merge_g2, aes(x=Position, y=density)) + geom_point() +
+  facet_wrap(~Chromosome) + scale_x_continuous(limits = c(100000,300000000)) +
+  labs(title = "Distribution of maize SNPs on each Chromosome",
+       x = "Position", y = "Number of SNPs")
+
+#I would just make that minor change from labs(x = "Chromosome") to labs(x = "Position") for both maize and teosinte
+
+#From R visualization(2) - amount of snp data in each sample: small detail, but the tile for the x-axis is misspelled as labs(x = "sampe label") instead of labs(x = "sample label"); this is across all four plots for maize and teosinte
+
+#For both R Visualization(2) - amount of snp data in each sample and R Visualization(2) - the amount of SNPs in each group: when you plot "Amount of SNPs at each SNP site," I would re-label your y-axis since you're not plotting the "Number of SNPs" but a ratio of heterozygous to homozygous sites; just make sure these plots show that you are looking at the amount of heterozygosity since it's not obvious when looking at the plotted data
+```
