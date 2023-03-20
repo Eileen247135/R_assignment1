@@ -1,0 +1,29 @@
+---
+title: "Tyner_Review"
+author: "tltyner"
+date: "2023-03-20"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+##My Suggestions
+
+#General
+```{r}
+#Make all markdowns one document
+
+#gtools installation didn't work, double check your command
+
+#files aren't easy to read after processing when opened in R, can't tell if snps are actually increasing/decreasing. 
+```
+
+#Visualization
+```{r}
+#in second visualization, there is a typo in "Sample" for two of your x-axis. Also, I think your part 2 graphs should more clearly label heterozygosity and homozygosity (also, for mine I did a homozygous/heterozygous comparison and a missing data graph seperately, not sure what he's looking for for the final answer!)
+
+#Nice third graph!
+```
+
