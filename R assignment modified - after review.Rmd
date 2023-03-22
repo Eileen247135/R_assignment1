@@ -1,0 +1,291 @@
+---
+title: "R assignment - modified"
+author: "Yiling Feng"
+date: "3/21/2023"
+output: html_document
+---
+
+# Data inspection
+## Inspect the size of each file
+```{r}
+file_info_snp <- file.info("snp_position.txt")
+file_size_snp <- file_info_snp$size
+cat("file size (snp_position.txt) :", file_size_snp, "bytes")
+cat("; ")
+file_info_f <- file.info("fang_et_al_genotypes.txt")
+file_size_f <- file_info_snp$size
+cat("file size (fang_et_al_genotypes.txt):", file_size_f, "bytes")
+```
+## Inspect the number of columns of each file
+```{r}
+csnp <- read.table("snp_position.txt", header = TRUE, sep = "\t")
+numc_m <- ncol(csnp)
+cat("number of columns (snp_position.txt):", numc_m)
+cat("; ")
+cfang <- read.table("fang_et_al_genotypes.txt", header = TRUE)
+numc_f <- ncol(cfang)
+cat("number of columns (fang_et_al_genotypes.txt):", numc_f)
+```
+## Inspect the number of rows of each file
+```{r}
+rsnp <- read.table("snp_position.txt", header = TRUE, sep = "\t")
+numr_m <- nrow(rsnp)
+cat("number of rows (snp_position.txt):", numr_m, "\n")
+cat("; ")
+rfang <- read.table("fang_et_al_genotypes.txt", header = TRUE)
+numr_f <- nrow(rfang)
+cat("number of rows (fang_et_al_genotypes.txt):", numr_f)
+```
+
+# Data processing (maize): 
+## 10 files with SNPs ordered based on increasing position values and with missing data encoded by "?"
+```{r}
+install.packages("gtools")
+library(tidyverse)
+library(dplyr)
+library(gtools)
+
+fang <- read_table("fang_et_al_genotypes.txt")
+snps <- read_table("snp_position.txt")
+
+maize <- filter(fang, Group %in% c("ZMMIL", "ZMMLR", "ZMMMR"))
+maize1 <- select (maize, -c(Group, JG_OTU))
+maizet1 <- t(maize1)
+maizet1d <- as.data.frame(maizet1)
+maizet1d <- cbind(colnames(maize1), maizet1d)         #add a colname of "maize1" to the transposed maize file
+colnames(maizet1d) <- as.character(maizet1d[1,])
+maizet1d <- maizet1d[-1,]
+colnames(maizet1d)[1] <- "SNP_ID"          #rename the colnames in "maizet1d" file
+rownames(maizet1d) <- NULL
+
+#extract key information from "snp" file
+snps_chr <- select(snps, SNP_ID, Chromosome, Position)
+
+#join two dataframe file together on a common column
+maize_merge <- inner_join(snps_chr, maizet1d, by = "SNP_ID")
+
+#make txt files for merged maize information
+write.table(maize_merge, file = "merged_maize.txt", quote = FALSE, sep="\t", row.names = FALSE, col.names = TRUE)
+
+#10 files (1 for each chromosome) with SNPs ordered based on increasing position values and with missing data encoded by this symbol: ?
+maize_mergei <- maize_merge
+maize_mergei[maize_mergei == "?/?"] <- "?"       #missing data encoded by "?"
+maize_merge_posi <- mixedsort(as.character(maize_mergei$Position))   
+maize_mergei$Position <- maize_merge_posi   #increasing position values
+
+for (i in 1:10){
+  maize_chr_i <- filter(maize_mergei, Chromosome %in% c(i))
+  maize_inc <- paste("maize_chr_i", i,".txt", sep="")
+  write.table(maize_chr_i, file = maize_inc, sep = "\t", row.names = FALSE, col.names = TRUE)
+}
+```
+
+# Data processing (maize): 
+## 10 files with SNPs ordered based on decreasing position values and with missing data encoded by "-"
+```{r}
+#10 files (1 for each chromosome) with SNPs ordered based on decreasing position values and with missing data encoded by this symbol: -
+maize_merged <- maize_merge
+maize_merged[maize_merged == "?/?"] <- "-"       #missing data encoded by "?"
+maize_merge_posd <- mixedsort(as.character(maize_merged$Position), decreasing = TRUE)   
+maize_merged$Position <- maize_merge_posd   #decreasing position values
+
+for (i in 1:10){
+  maize_chr_d <- filter(maize_merged, Chromosome %in% c(i))
+  maize_dec <- paste("maize_chr_d", i,".txt", sep="")
+  write.table(maize_chr_d, file = maize_dec, sep = "\t", row.names = FALSE, col.names = TRUE)
+}
+```
+
+# Data processing (teosinte): 
+## 10 files with SNPs ordered based on increasing position values and with missing data encoded by "?"
+```{r}
+#extract key imformation from "fang" file
+teosinte <- filter(fang, Group %in% c("ZMPBA", "ZMPIL", "ZMPJA"))
+teosinte1 <- select (teosinte, -c(Group, JG_OTU))
+teosintet1 <- t(teosinte1)
+teosintet1d <- as.data.frame(teosintet1)
+teosintet1d <- cbind(colnames(teosinte1), teosintet1d)         #add a colname of "teosinte1" to the transposed teosinte file
+colnames(teosintet1d) <- as.character(teosintet1d[1,])
+teosintet1d <- teosintet1d[-1,]
+colnames(teosintet1d)[1] <- "SNP_ID"          #rename the colnames in "teosintet1d" file
+rownames(teosintet1d) <- NULL       #This is the "transposed teosinte" file for the next merging step
+
+#extract key information from "snp" file
+snps_chr <- select(snps, SNP_ID, Chromosome, Position)
+
+#join two dataframe file together on a common column
+teosinte_merge <- inner_join(snps_chr, teosintet1d, by = "SNP_ID")
+
+#make txt files for merged teosinte information
+write.table(teosinte_merge, file = "merged_teosinte.txt", quote = FALSE, sep="\t", row.names = FALSE, col.names = TRUE)
+
+#10 files (1 for each chromosome) with SNPs ordered based on increasing position values and with missing data encoded by this symbol: ?
+teosinte_mergei <- teosinte_merge
+teosinte_mergei[teosinte_mergei == "?/?"] <- "?"       #missing data encoded by "?"
+teosinte_merge_posi <- mixedsort(as.character(teosinte_mergei$Position))   
+teosinte_mergei$Position <- teosinte_merge_posi   #increasing position values
+
+for (i in 1:10){
+  teosinte_chr_i <- filter(teosinte_mergei, Chromosome %in% c(i))
+  teosinte_inc <- paste("teosinte_chr_i", i,".txt", sep="")
+  write.table(teosinte_chr_i, file = teosinte_inc, sep = "\t", row.names = FALSE, col.names = TRUE)
+}
+```
+
+# Data processing (teosinte): 
+## 10 files with SNPs ordered based on decreasing position values and with missing data encoded by "-"
+```{r}
+teosinte_merged <- teosinte_merge
+teosinte_merged[teosinte_merged == "?/?"] <- "-"       #missing data encoded by "?"
+teosinte_merge_posd <- mixedsort(as.character(teosinte_merged$Position), decreasing = TRUE)   
+teosinte_merged$Position <- teosinte_merge_posd   #decreasing position values
+
+for (i in 1:10){
+  teosinte_chr_d <- filter(teosinte_merged, Chromosome %in% c(i))
+  teosinte_dec <- paste("teosinte_chr_d", i,".txt", sep="")
+  write.table(teosinte_chr_d, file = teosinte_dec, sep = "\t", row.names = FALSE, col.names = TRUE)
+}
+```
+
+# Data visualization
+## SNPs per chromosome
+### the distribution of SNPs across chromosomes
+```{r}
+library(ggplot2)
+snps <- read_table("snp_position.txt")  # create a figure for the "Distribution of SNPs across chromosomes"
+table(snps$Chromosome)
+num_chr <- snps %>% count(Chromosome)
+df_snps <- ggplot(num_chr) + geom_bar(aes(x=as.double(Chromosome), y=n), stat = "identity", fill = "burlywood1") +
+  scale_x_continuous(breaks = 1:10) + labs(title = "Distribution of SNPs across chromosomes",
+                            x = "Chromosome", y = "Number of SNP positions")
+print(df_snps)
+```
+## SNPs per chromosome
+### the distribution of maize SNPs on chromosome
+```{r}
+maize_merge <- read_table("merged_maize.txt")
+row_counts_m2 <- rowSums(maize_merge == "A/G" | maize_merge == "A/C" | maize_merge == "A/T"
+                        | maize_merge == "C/G" | maize_merge == "G/T" | maize_merge == "C/T"
+                        | maize_merge == "A/A" | maize_merge == "C/C" | maize_merge == "G/G"
+                        | maize_merge == "T/T")    #count the number of SNPs for each SNP_ID
+maize_merge_g2 <- mutate(maize_merge, density = row_counts_m2)     #add a column of SNP number
+write.table(maize_merge_g2, file = "merged_maize_g2.txt", quote = FALSE, sep="\t", 
+            row.names = FALSE, col.names = TRUE)
+maize_merge_g2$Position <- as.integer(maize_merge_g2$Position)
+df_chr_m <- ggplot(maize_merge_g2, aes(x=Position/1000000, y=density)) + geom_point(color = "chocolate1") +
+  facet_wrap(~as.double(Chromosome)) + scale_x_continuous(limits = c(0.1,300)) +
+  labs(title = "Distribution of maize SNPs on each Chromosome",
+       x = "Position of Chromosome (Mb)", y = "Number of SNPs")
+print(df_chr_m)
+```
+## SNPs per chromosome
+### the distribution of teosinte SNPs on each chromosome
+```{r}
+teosinte_merge <- read_table("merged_teosinte.txt")
+row_counts_t2 <- rowSums(teosinte_merge == "A/G" | teosinte_merge == "A/C" | teosinte_merge == "A/T"
+                         | teosinte_merge == "C/G" | teosinte_merge == "G/T" | teosinte_merge == "C/T"
+                         | teosinte_merge == "A/A" | teosinte_merge == "C/C" | teosinte_merge == "G/G"
+                         | teosinte_merge == "T/T")    #count the number of SNPs for each SNP_ID
+teosinte_merge_g2 <- mutate(teosinte_merge, density = row_counts_t2)     #add a column of SNP number
+write.table(teosinte_merge_g2, file = "merged_teosinte_g2.txt", quote = FALSE, sep="\t", 
+            row.names = FALSE, col.names = TRUE)
+teosinte_merge_g2$Position <- as.integer(teosinte_merge_g2$Position)
+df_chr_t <- ggplot(teosinte_merge_g2, aes(x=Position/1000000, y=density)) + geom_point(color = "orange") +
+  facet_wrap(~as.double(Chromosome)) + scale_x_continuous(limits = c(0.1,300)) +
+  labs(title = "Distribution of teosinte SNPs on each Chromosome",
+       x = "Position of Chromosome (Mb)", y = "Number of SNPs")
+print(df_chr_t)
+```
+
+# Data visualization
+## Missing data and amount of heterozygosity
+### in samples
+```{r}
+library(ggplot2)
+library(tidyr)
+library(dplyr)
+f <- read.table("fang_et_al_genotypes.txt")
+f[f == "A/A" | f == "C/C" | f == "G/G"| f == "T/T" |f == "A/A"] <- "homozygous" 
+f[f == "A/G" | f == "A/C" | f == "A/T"| f == "C/G" | f == "G/T" | f == "C/T"] <- "heterozygous" 
+f[f == "?/?"] <- "missing"
+mutate_f <- f 
+colnames(mutate_f) <- mutate_f[1,] 
+mutate_f <- mutate_f[-1,]
+
+mutate_f_longer <- pivot_longer(mutate_f, cols = c(4:986), names_to = "SNP_ID",
+                                values_to = "substitution")
+
+mutate_f_samples <- mutate_f_longer %>% group_by(Sample_ID) %>% count(substitution)
+
+sample_prop <- ggplot(mutate_f_samples, aes(x = Sample_ID, y = n, fill = substitution)) +
+  geom_bar(stat = "identity", position = "fill") +
+  labs(title = "Proportion of Homozygotes, Heterozygotes and Missing Data in Samples",
+       x = "Sample_ID",
+       y = "Proportion",
+       fill = "substitution") +
+  theme(axis.text.x = element_blank(),
+        axis.ticks.x = element_blank())
+print(sample_prop)
+```
+
+## Missing data and amount of heterozygosity
+### in groups
+```{r}
+mutate_f_groups <- mutate_f_longer %>% group_by(Group) %>% count(substitution)
+
+group_prop <- ggplot(mutate_f_groups, aes(x = Group, y = n, fill = substitution)) +
+  geom_bar(stat = "identity", position = "fill") +
+  labs(title = "Proportion of Homozygotes, Heterozygotes and Missing Data in Groups",
+       x = "Group",
+       y = "Proportion",
+       fill = "substitution") +
+  theme(axis.text.x = element_text(angle = 45, vjust = 0.5))
+print(group_prop)
+```
+
+## create your own visualization
+```{r}
+library(ggplot2)
+library(tidyverse)
+library(dplyr)
+
+#count the number of SNPs in "maize" file
+maize_merge <- read_table("merged_maize.txt")
+row_counts_m <- rowSums(maize_merge == "A/G" | maize_merge == "A/C" | maize_merge == "A/T"
+                      | maize_merge == "C/G" | maize_merge == "G/T" | maize_merge == "C/T"
+                      | maize_merge == "A/A" | maize_merge == "C/C" | maize_merge == "G/G"
+                      | maize_merge == "T/T")       #count the number of SNPs for each SNP_ID
+maize_merge_g1 <- mutate(maize_merge, density = row_counts_m)   #add a column of SNP number
+write.table(maize_merge_g1, file = "merged_maize_g1.txt", quote = FALSE, sep="\t", row.names = FALSE, col.names = TRUE)
+
+#maize - snp counts
+maize_g1 <- read_table("merged_maize_g1.txt")
+nm1 <- filter(maize_g1, Chromosome == "1") 
+nm1 <- sum(nm1$density)
+nm2 <- filter(maize_g1, Chromosome == "2") 
+nm2 <- sum(nm2$density)
+nm3 <- filter(maize_g1, Chromosome == "3") 
+nm3 <- sum(nm3$density)
+nm4 <- filter(maize_g1, Chromosome == "4") 
+nm4 <- sum(nm4$density)
+nm5 <- filter(maize_g1, Chromosome == "5") 
+nm5 <- sum(nm5$density)
+nm6 <- filter(maize_g1, Chromosome == "6") 
+nm6 <- sum(nm6$density)
+nm7 <- filter(maize_g1, Chromosome == "7") 
+nm7 <- sum(nm7$density)
+nm8 <- filter(maize_g1, Chromosome == "8") 
+nm8 <- sum(nm8$density)
+nm9 <- filter(maize_g1, Chromosome == "9") 
+nm9 <- sum(nm9$density)
+nm10 <- filter(maize_g1, Chromosome == "10") 
+nm10 <- sum(nm10$density)
+maize_g1_den <- data.frame(chromosome =c("1","2","3","4","5","6","7","8","9","10"), 
+                           number=c(nm1, nm2,nm3,nm4, nm5,nm6, nm7, nm8,nm9, nm10))
+maize_g_den <- ggplot(maize_g1_den, aes(as.double(chromosome), number)) + 
+  geom_bar(stat = "identity", fill = "blue") + scale_x_continuous(breaks = 1:10) +
+  labs(title = "Counts of maize SNPs Across Chromosome",
+       x = "Chromosome", y = "Number of SNPs")
+print(maize_g_den)
+```
+
